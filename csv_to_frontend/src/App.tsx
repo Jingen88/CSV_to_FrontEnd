@@ -12,6 +12,8 @@ import {
   Box,
   Typography,
   TableSortLabel,
+  Snackbar, 
+  Alert,    
 } from '@mui/material';
 import { visuallyHidden } from '@mui/utils';
 
@@ -120,6 +122,7 @@ const initialCsvData = `
 `;
 
 // Function to parse CSV string into an array of objects
+// Function to parse CSV string into an array of objects
 const parseCSV = (csvString) => {
   const lines = csvString.trim().split('\n');
   if (lines.length === 0) return { headers: [], data: [] };
@@ -144,14 +147,15 @@ const parseCSV = (csvString) => {
     return values;
   };
 
-  const headers = parseLine(lines[0]).map(header => header.replace(/"/g, '')); // Remove quotes from headers
+  const headers = parseLine(lines[0]).map(header => header.replace(/"/g, ''));
+  let idCounter = 0; // Initialize a counter for unique IDs
   const data = lines.slice(1).map(line => {
-    const values = parseLine(line).map(value => value.replace(/"/g, '')); // Remove quotes from data values
-    return headers.reduce((obj, header, index) => {
-      // Clean up Excel formulas that might appear in the CSV
+    const values = parseLine(line).map(value => value.replace(/"/g, ''));
+    const rowObject = headers.reduce((obj, header, index) => {
       obj[header] = values[index] && values[index].startsWith('=VLOOKUP') ? '' : values[index];
       return obj;
     }, {});
+    return { ...rowObject, id: idCounter++ }; // Add a unique 'id' to each row
   });
   return { headers, data };
 };
@@ -179,6 +183,9 @@ const App = () => {
   const [editingCell, setEditingCell] = useState(null); // { rowIndex, columnId }
   const [orderBy, setOrderBy] = useState('');
   const [order, setOrder] = useState('asc'); // 'asc' or 'desc'
+  const [snackbarOpen, setSnackbarOpen] = useState(false); 
+  const [snackbarMessage, setSnackbarMessage] = useState(''); 
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success'); 
 
   useEffect(() => {
     // Simulate loading data from CSV
@@ -240,12 +247,21 @@ const App = () => {
 
   // Handle saving edited data (simulated)
   const handleSave = useCallback(() => {
-    const updatedCsvString = toCSV(headers, tableData);
-    console.log('Simulating save:', updatedCsvString);
-    // You can replace this alert with a more user-friendly message box
-    // or a download link for the CSV.
-    window.alert('Data saved! (Check console for CSV output)');
-  }, [headers, tableData]);
+  const updatedCsvString = toCSV(headers, tableData);
+  console.log('Simulating save:', updatedCsvString);
+  // Replace window.alert with Snackbar state update
+  setSnackbarMessage('Data saved successfully!'); // Set your success message
+  setSnackbarSeverity('success'); // Set severity to 'success'
+  setSnackbarOpen(true); // Open the Snackbar
+}, [headers, tableData]);
+
+// Handle Snackbar close
+const handleSnackbarClose = (event, reason) => {
+  if (reason === 'clickaway') {
+    return;
+  }
+  setSnackbarOpen(false); // Close the Snackbar
+};
 
   // Handle sorting request
   const handleRequestSort = useCallback((columnId) => {
@@ -257,124 +273,136 @@ const App = () => {
   // Calculate row count
   const rowCount = sortedData.length;
 
-  return ( 
-    <Box className="min-h-screen bg-gray-100 p-4 font-inter">
-      <div className=" max-w-7xl mx-auto bg-white rounded-lg shadow-xl p-6">
-        <Typography variant="h4" component="h1" className="text-center mb-10 text-gray-800 font-bold roboto ">
-          CSV Data Editor
-        </Typography>
+  return (
+  <Box className="min-h-screen bg-gray-100 p-4 font-inter">
+    <div className=" max-w-7xl mx-auto bg-white rounded-lg shadow-xl p-6">
+      <Typography variant="h4" component="h1" className="text-center mb-10 text-gray-800 font-bold roboto ">
+        CSV Data Editor
+      </Typography>
 
-        <Box className="mt-10 flex flex-col sm:flex-row justify-between sm:gap-10 gap-60 items-center mb-6 space-y-4 sm:space-y-0 sm:space-x-4">
-          <TextField
-            label="Search"
-            variant="outlined"
-            size="small"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-grow w-full sm:w-auto"
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                borderRadius: '8px',
-              },
-            }}
-          />
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleSave}
-            className="w-full sm:w-auto text-black px-6 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
-            sx={{
-              textTransform: 'none',
-              color:'black',
-              fontWeight: 'bold',
-              background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
-              '&:hover': {
-                background: 'linear-gradient(45deg, #FF8E53 30%, #FE6B8B 90%)',
-              },
+      <Box className="mt-10 flex flex-col sm:flex-row justify-between sm:gap-10 gap-60 items-center mb-6 space-y-4 sm:space-y-0 sm:space-x-4">
+        <TextField
+          label="Search"
+          variant="outlined"
+          size="small"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="flex-grow w-full sm:w-auto"
+          sx={{
+            '& .MuiOutlinedInput-root': {
               borderRadius: '8px',
-            }}
-          >
-            Save Changes
-          </Button>
-        </Box>
+            },
+          }}
+        />
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleSave} // This will now trigger the Snackbar
+          className="w-full sm:w-auto text-black px-6 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+          sx={{
+            textTransform: 'none',
+            color:'black',
+            fontWeight: 'bold',
+            background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+            '&:hover': {
+              background: 'linear-gradient(45deg, #FF8E53 30%, #FE6B8B 90%)',
+            },
+            borderRadius: '8px',
+          }}
+        >
+          Save Changes
+        </Button>
+      </Box>
 
-        <Typography variant="subtitle1" className="mb-4 text-gray-700">
-          Total Rows Displayed: {rowCount}
-        </Typography>
+      <Typography variant="subtitle1" className="mb-4 text-gray-700">
+        Total Rows Displayed: {rowCount}
+      </Typography>
 
-        <TableContainer component={Paper} className="rounded-lg shadow-lg">
-          <Table stickyHeader aria-label="csv data table">
-            <TableHead className="bg-gray-200">
-              <TableRow>
-                {headers.map((header) => (
-                  <TableCell
-                    key={header}
-                    className="font-semibold text-gray-700 cursor-pointer select-none"
-                    sortDirection={orderBy === header ? order : false}
-                    onClick={() => handleRequestSort(header)}
-                    sx={{
-                      '& .MuiTableSortLabel-icon': {
-                        color: 'rgba(0, 0, 0, 0.54) !important', // Ensure icon is visible
-                      },
-                    }}
+      <TableContainer component={Paper} className="rounded-lg shadow-lg">
+        <Table stickyHeader aria-label="csv data table">
+          <TableHead className="bg-gray-200">
+            <TableRow>
+              {headers.map((header) => (
+                <TableCell
+                  key={header}
+                  className="font-semibold text-gray-700 cursor-pointer select-none"
+                  sortDirection={orderBy === header ? order : false}
+                  onClick={() => handleRequestSort(header)}
+                  sx={{
+                    '& .MuiTableSortLabel-icon': {
+                      color: 'rgba(0, 0, 0, 0.54) !important',
+                    },
+                  }}
+                >
+                  <TableSortLabel
+                    active={orderBy === header}
+                    direction={orderBy === header ? order : 'asc'}
                   >
-                    <TableSortLabel
-                      active={orderBy === header}
-                      direction={orderBy === header ? order : 'asc'}
-                    >
-                      {header.charAt(0).toUpperCase() + header.slice(1)} {/* Capitalize header */}
-                      {orderBy === header ? (
-                        <Box component="span" sx={visuallyHidden}>
-                          {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                        </Box>
-                      ) : null}
-                    </TableSortLabel>
+                    {header.charAt(0).toUpperCase() + header.slice(1)}
+                    {orderBy === header ? (
+                      <Box component="span" sx={visuallyHidden}>
+                        {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
+                      </Box>
+                    ) : null}
+                  </TableSortLabel>
+                </TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+           <TableBody>
+              {sortedData.map((row, rowIndex) => (
+                <TableRow
+                  key={row.id} // Use the unique 'id' generated during parsing
+                  sx={{
+                    '&:nth-of-type(even)': {
+                      backgroundColor: 'action.hover',
+                    },
+                    '&:hover': {
+                      backgroundColor: 'action.selected',
+                    },
+                  }}
+                >
+                {headers.map((columnId) => (
+                  <TableCell
+                    key={columnId}
+                    onClick={() => handleCellClick(rowIndex, columnId)}
+                    className="p-2 hover:bg-blue-200 transition-colors duration-200"
+                    sx={{ borderBottom: '1px solid #e0e0e0' }}
+                  >
+                    {editingCell?.rowIndex === rowIndex && editingCell?.columnId === columnId ? (
+                      <TextField
+                        value={tableData[rowIndex][columnId]}
+                        onChange={(e) => handleCellValueChange(e, rowIndex, columnId)}
+                        onBlur={() => setEditingCell(null)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            setEditingCell(null);
+                          }
+                        }}
+                        autoFocus
+                        variant="outlined"
+                        size="small"
+                        fullWidth
+                        className="rounded-md"
+                      />
+                    ) : (
+                      row[columnId]
+                    )}
                   </TableCell>
                 ))}
               </TableRow>
-            </TableHead>
-            <TableBody>
-              {sortedData.map((row, rowIndex) => (
-                <TableRow
-                  key={row.Code || rowIndex} // Use a more stable key from the new data
-                  className={`${rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-blue-50 transition-colors duration-200`}
-                >
-                  {headers.map((columnId) => (
-                    <TableCell
-                      key={columnId}
-                      onClick={() => handleCellClick(rowIndex, columnId)}
-                      className="p-2 hover:bg-blue-200 transition-colors duration-200"
-                      sx={{ borderBottom: '1px solid #e0e0e0' }}
-                    >
-                      {editingCell?.rowIndex === rowIndex && editingCell?.columnId === columnId ? (
-                        <TextField
-                          value={tableData[rowIndex][columnId]} // Use tableData directly for editing
-                          onChange={(e) => handleCellValueChange(e, rowIndex, columnId)}
-                          onBlur={() => setEditingCell(null)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              setEditingCell(null);
-                            }
-                          }}
-                          autoFocus
-                          variant="outlined"
-                          size="small"
-                          fullWidth
-                          className="rounded-md"
-                        />
-                      ) : (
-                        row[columnId]
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </div>
-    </Box>
-  );
-};
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </div>
 
+    {/* Snackbar component for notifications */}
+    <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
+      <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
+        {snackbarMessage}
+      </Alert>
+    </Snackbar>
+  </Box>
+)};
 export default App;
