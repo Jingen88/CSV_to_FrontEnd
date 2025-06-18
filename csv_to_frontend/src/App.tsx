@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback, createContext, useContext } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Table,
   TableBody,
@@ -12,15 +12,10 @@ import {
   Box,
   Typography,
   TableSortLabel,
-  Switch, // Import Switch for the toggle
-  CssBaseline, // Import CssBaseline for consistent styling across browsers
 } from '@mui/material';
 import { visuallyHidden } from '@mui/utils';
-import { createTheme, ThemeProvider } from '@mui/material/styles'; // Import theming
-import Brightness4Icon from '@mui/icons-material/Brightness4'; // Icon for light mode (moon)
-import Brightness7Icon from '@mui/icons-material/Brightness7'; // Icon for dark mode (sun)
 
-// Small sample CSV data (you can replace this with your full data later)
+// CSV data loaded from sample nuovo customer_small.csv
 const initialCsvData = `
 "Code","StkDesc","Weight","Expr1","Country","TransactionTypeID","SourceAreaReference","TransactionDate","Name","ProdGRP","CustomerAccountNumber","CustomerAccountName","Sales_Manager","Sales_Area","City","Channel","Route","SubCategory","AccountIsOnHold","Brand","case conversion ","cases","category","item code"
 "SN-B-BOMB","Shan Biryani Bombay 12 x 60 Gm","0.0000",1,"GB",15,"2-RM-DFL",1/3/2023 0:00,"Great Britain","0001","2-RM-DFL","Dua Foods Ltd(Romford)","Hamail","London - Romford","London","T2- London","Birmingham Stratford RD","Biryani","=FALSE()","Shan","=VLOOKUP(A2,'file:///S:/Shan Analysis/updated dashboard new shan.xlsx'#$Vlookup.D$1:E$1048576,2,FALSE())","=U2*D2","=VLOOKUP(A2,'file:///S:/Shan Analysis/updated dashboard new shan.xlsx'#$Vlookup.D$1:F$1048576,3,FALSE())","=VLOOKUP(B2,'file:///S:/Shan Analysis/updated dashboard new shan.xlsx'#$Vlookup.A$1:G$1048576,7,FALSE())"
@@ -177,19 +172,13 @@ const toCSV = (headers, data) => {
   return [headerRow, ...dataRows].join('\n');
 };
 
-// Theme context to provide theme mode to children components
-const ColorModeContext = createContext({ toggleColorMode: () => {} });
-
-const AppContent = () => {
+const App = () => {
   const [tableData, setTableData] = useState([]);
   const [headers, setHeaders] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [editingCell, setEditingCell] = useState(null); // { rowIndex, columnId }
   const [orderBy, setOrderBy] = useState('');
   const [order, setOrder] = useState('asc'); // 'asc' or 'desc'
-
-  // Access the theme mode from context
-  const { mode, toggleColorMode } = useContext(ColorModeContext);
 
   useEffect(() => {
     // Simulate loading data from CSV
@@ -268,26 +257,14 @@ const AppContent = () => {
   // Calculate row count
   const rowCount = sortedData.length;
 
-  return (
-    <Box className="min-h-screen p-4 font-inter" sx={{ backgroundColor: 'background.default', color: 'text.primary' }}>
-      <div className="max-w-7xl mx-auto rounded-lg shadow-xl p-6" style={{ backgroundColor: mode === 'light' ? 'white' : '#333' }}>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-          <Typography variant="h4" component="h1" className="text-center font-bold" sx={{ color: 'text.primary' }}>
-            CSV Data Editor
-          </Typography>
-          <Box display="flex" alignItems="center">
-            {mode === 'light' ? <Brightness7Icon sx={{ color: 'text.secondary' }} /> : <Brightness4Icon sx={{ color: 'text.secondary' }} />}
-            <Switch
-              checked={mode === 'dark'}
-              onChange={toggleColorMode}
-              inputProps={{ 'aria-label': 'dark mode toggle' }}
-              color="default"
-            />
-          </Box>
-        </Box>
+  return ( 
+    <Box className="min-h-screen bg-gray-100 p-4 font-inter">
+      <div className=" max-w-7xl mx-auto bg-white rounded-lg shadow-xl p-6">
+        <Typography variant="h4" component="h1" className="text-center mb-10 text-gray-800 font-bold roboto ">
+          CSV Data Editor
+        </Typography>
 
-
-        <Box className="flex flex-col sm:flex-row justify-between items-center mb-6 space-y-4 sm:space-y-0 sm:space-x-4">
+        <Box className="mt-10 flex flex-col sm:flex-row justify-between sm:gap-10 gap-60 items-center mb-6 space-y-4 sm:space-y-0 sm:space-x-4">
           <TextField
             label="Search"
             variant="outlined"
@@ -298,19 +275,6 @@ const AppContent = () => {
             sx={{
               '& .MuiOutlinedInput-root': {
                 borderRadius: '8px',
-                color: 'text.primary', // Text color for input
-                '& fieldset': {
-                  borderColor: 'text.secondary', // Border color
-                },
-                '&:hover fieldset': {
-                  borderColor: 'text.primary', // Border color on hover
-                },
-                '&.Mui-focused fieldset': {
-                  borderColor: 'primary.main', // Border color when focused
-                },
-              },
-              '& .MuiInputLabel-root': {
-                color: 'text.secondary', // Label color
               },
             }}
           />
@@ -318,9 +282,10 @@ const AppContent = () => {
             variant="contained"
             color="primary"
             onClick={handleSave}
-            className="w-full sm:w-auto px-6 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+            className="w-full sm:w-auto text-black px-6 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
             sx={{
               textTransform: 'none',
+              color:'black',
               fontWeight: 'bold',
               background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
               '&:hover': {
@@ -333,24 +298,23 @@ const AppContent = () => {
           </Button>
         </Box>
 
-        <Typography variant="subtitle1" className="mb-4" sx={{ color: 'text.secondary' }}>
+        <Typography variant="subtitle1" className="mb-4 text-gray-700">
           Total Rows Displayed: {rowCount}
         </Typography>
 
-        <TableContainer component={Paper} className="rounded-lg shadow-lg" sx={{ backgroundColor: 'background.paper' }}>
+        <TableContainer component={Paper} className="rounded-lg shadow-lg">
           <Table stickyHeader aria-label="csv data table">
-            <TableHead sx={{ backgroundColor: 'action.hover' }}>
+            <TableHead className="bg-gray-200">
               <TableRow>
                 {headers.map((header) => (
                   <TableCell
                     key={header}
-                    className="font-semibold cursor-pointer select-none"
+                    className="font-semibold text-gray-700 cursor-pointer select-none"
                     sortDirection={orderBy === header ? order : false}
                     onClick={() => handleRequestSort(header)}
                     sx={{
-                      color: 'text.primary',
                       '& .MuiTableSortLabel-icon': {
-                        color: 'text.secondary !important', // Ensure icon is visible in dark mode
+                        color: 'rgba(0, 0, 0, 0.54) !important', // Ensure icon is visible
                       },
                     }}
                   >
@@ -373,19 +337,14 @@ const AppContent = () => {
               {sortedData.map((row, rowIndex) => (
                 <TableRow
                   key={row.Code || rowIndex} // Use a more stable key from the new data
-                  sx={{
-                    backgroundColor: rowIndex % 2 === 0 ? 'background.paper' : 'action.selected',
-                    '&:hover': {
-                      backgroundColor: 'action.hover',
-                    },
-                    borderBottom: '1px solid divider', // Add a border for separation
-                  }}
+                  className={`${rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-blue-50 transition-colors duration-200`}
                 >
                   {headers.map((columnId) => (
                     <TableCell
                       key={columnId}
                       onClick={() => handleCellClick(rowIndex, columnId)}
-                      sx={{ color: 'text.primary', borderBottom: '1px solid divider' }}
+                      className="p-2 hover:bg-blue-200 transition-colors duration-200"
+                      sx={{ borderBottom: '1px solid #e0e0e0' }}
                     >
                       {editingCell?.rowIndex === rowIndex && editingCell?.columnId === columnId ? (
                         <TextField
@@ -401,24 +360,7 @@ const AppContent = () => {
                           variant="outlined"
                           size="small"
                           fullWidth
-                          sx={{
-                            '& .MuiOutlinedInput-root': {
-                              borderRadius: '8px',
-                              color: 'text.primary', // Text color for input
-                              '& fieldset': {
-                                borderColor: 'text.secondary', // Border color
-                              },
-                              '&:hover fieldset': {
-                                borderColor: 'text.primary', // Border color on hover
-                              },
-                              '&.Mui-focused fieldset': {
-                                borderColor: 'primary.main', // Border color when focused
-                              },
-                            },
-                            '& .MuiInputBase-input': {
-                                padding: '8px 12px', // Adjust padding for smaller size
-                            },
-                          }}
+                          className="rounded-md"
                         />
                       ) : (
                         row[columnId]
@@ -432,118 +374,6 @@ const AppContent = () => {
         </TableContainer>
       </div>
     </Box>
-  );
-};
-
-// Main App component to handle theme state
-const App = () => {
-  const [mode, setMode] = useState('light'); // 'light' or 'dark'
-
-  const colorMode = useMemo(
-    () => ({
-      toggleColorMode: () => {
-        setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
-      },
-      mode, // Expose mode to children
-    }),
-    [mode],
-  );
-
-  const theme = useMemo(
-    () =>
-      createTheme({
-        palette: {
-          mode,
-          ...(mode === 'light'
-            ? {
-                // Light mode palette
-                primary: {
-                  main: '#FE6B8B',
-                },
-                secondary: {
-                  main: '#FF8E53',
-                },
-                background: {
-                  default: '#f4f6f8',
-                  paper: '#ffffff',
-                },
-                text: {
-                  primary: '#333333',
-                  secondary: '#555555',
-                },
-                divider: '#e0e0e0', // Light divider
-              }
-            : {
-                // Dark mode palette
-                primary: {
-                  main: '#FF8E53', // Invert primary/secondary if desired for visual appeal
-                },
-                secondary: {
-                  main: '#FE6B8B',
-                },
-                background: {
-                  default: '#121212',
-                  paper: '#1e1e1e',
-                },
-                text: {
-                  primary: '#e0e0e0',
-                  secondary: '#aaaaaa',
-                },
-                divider: '#444444', // Dark divider
-              }),
-        },
-        typography: {
-            fontFamily: '"Inter", sans-serif', // Ensure Inter font is applied
-        },
-        components: {
-            MuiTableCell: {
-                styleOverrides: {
-                    head: {
-                        // Styles for table head cells
-                        // Ensure consistent background color for sticky header
-                        backgroundColor: mode === 'light' ? '#e0e0e0' : '#2a2a2a',
-                        borderBottom: `1px solid ${mode === 'light' ? '#c0c0c0' : '#555555'}`,
-                    },
-                    body: {
-                        // Styles for table body cells
-                    },
-                },
-            },
-            MuiPaper: {
-                styleOverrides: {
-                    root: {
-                        borderRadius: '8px', // Apply rounded corners to Paper components
-                    },
-                },
-            },
-            MuiButton: {
-                styleOverrides: {
-                    root: {
-                        borderRadius: '8px', // Apply rounded corners to Buttons
-                    },
-                },
-            },
-            MuiTextField: {
-                styleOverrides: {
-                    root: {
-                        '& .MuiOutlinedInput-root': {
-                            borderRadius: '8px', // Apply rounded corners to TextFields
-                        },
-                    },
-                },
-            },
-        },
-      }),
-    [mode],
-  );
-
-  return (
-    <ColorModeContext.Provider value={colorMode}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline /> {/* Applies base CSS and respects theme's background/text colors */}
-        <AppContent />
-      </ThemeProvider>
-    </ColorModeContext.Provider>
   );
 };
 
