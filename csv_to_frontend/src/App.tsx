@@ -385,7 +385,7 @@ const App = () => {
                       onClick={() => handleRequestSort(header)}
                       sx={{
                         '& .MuiTableSortLabel-icon': {
-                          color: 'rgba(0, 0, 0, 0.54) !important', 
+                          color: (theme) => theme.palette.text.secondary + ' !important', 
                         },
                       }}
                     >
