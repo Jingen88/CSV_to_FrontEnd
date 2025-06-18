@@ -325,11 +325,20 @@ const App = () => {
 
   return (
     <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
-     <Box sx={{ bgcolor: 'background.default', color: 'text.primary' }} className="min-h-screen p-4 font-inter flex justify-center items-center">
-+        <Paper elevation={3} sx={{ borderRadius: '8px', p: 3, width: '100%', maxWidth: '1280px' }}> {/* Replaced div with Paper and adjusted styling */}
-          <Typography variant="h4" component="h1" className="text-center mb-10 font-bold roboto ">
-            CSV Data Editor
-          </Typography>
+     <Box sx={{ bgcolor: 'background.default', color: 'text.primary' }} className="min-h-screen p-4 font-inter justify-center items-center">
+    
+    <Paper elevation={3} sx={{ borderRadius: '8px', p: 3, width: '100%', maxWidth: '1280px' }}> {/* Replaced div with Paper and adjusted styling */}
+          
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4, marginTop:2, }}>
+            <Typography variant="h4" component="h1" className="font-extrabold roboto ">
+              CSV Data Editor
+            </Typography>
+            {/* Dark mode toggle button */}
+            <IconButton sx={{ ml: 1 }} onClick={handleToggleDarkMode} color="inherit">
+              {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
+            </IconButton>
+          </Box>
+
 
           <Box className="mt-10 flex flex-col sm:flex-row justify-between sm:gap-10 gap-60 items-center mb-6 space-y-4 sm:space-y-0 sm:space-x-4">
             <TextField
@@ -363,10 +372,7 @@ const App = () => {
             >
               Save Changes
             </Button>
-            {/* Dark mode toggle button */}
-            <IconButton sx={{ ml: 1 }} onClick={handleToggleDarkMode} color="inherit">
-              {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
-            </IconButton>
+            
           </Box>
 
           <Typography variant="subtitle1" className="mb-4">
